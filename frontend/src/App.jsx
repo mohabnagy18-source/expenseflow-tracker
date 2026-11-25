@@ -117,7 +117,7 @@ function Dashboard({ user, logout }) {
               {report.byCategory.length === 0 && <p className="muted">Nothing spent yet this month.</p>}
               {report.byCategory.map((c) => (
                 <div key={c.categoryId} className="cat-row">
-                  <span className="cat-icon" style={{ background: c.color }}>{c.icon || c.name[0]}</span>
+                  <span className="cat-icon" style={{ background: c.color }}>{(c.icon || c.name[0]).slice(0, 2)}</span>
                   <div className="cat-main">
                     <div className="cat-head"><strong>{c.name}</strong><span>{money(c.total)} ({c.percent}%)</span></div>
                     <div className="track"><div className="fill" style={{ width: `${c.percent}%`, background: c.color }} /></div>
@@ -145,7 +145,7 @@ function Dashboard({ user, logout }) {
             {(expenses || []).map((x) => (
               <div key={x.id} className="card row">
                 <div className="row-main-flex">
-                  <span className="cat-icon" style={{ background: x.categoryColor }}>{x.categoryIcon || x.categoryName[0]}</span>
+                  <span className="cat-icon" style={{ background: x.categoryColor }}>{(x.categoryIcon || x.categoryName[0]).slice(0, 2)}</span>
                   <div className="row-main"><strong>{x.categoryName}</strong><span className="muted">{x.date}{x.note ? ` - ${x.note}` : ''}</span></div>
                 </div>
                 <div className="row-side"><strong>{money(x.amount)}</strong>
@@ -163,7 +163,7 @@ function Dashboard({ user, logout }) {
           <div className="list">{categories.map((c) => (
             <div key={c.id} className="card row">
               <div className="row-main-flex">
-                <span className="cat-icon" style={{ background: c.color }}>{c.icon || c.name[0]}</span>
+                <span className="cat-icon" style={{ background: c.color }}>{(c.icon || c.name[0]).slice(0, 2)}</span>
                 <strong>{c.name}</strong>{c.isDefault && <span className="badge badge-blue">default</span>}
               </div>
               {!c.isDefault && <button className="btn btn-ghost btn-sm" onClick={() => delCategory(c.id)}>Delete</button>}
