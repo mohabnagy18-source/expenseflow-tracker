@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, MONTHS } from './api.js'
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const ICONS = { cart: '🛒', utensils: '🍽️', car: '🚗', home: '🏠', bolt: '⚡', heart: '❤️', film: '🎬', bag: '🛍️', tag: '🏷️' }
+const iconOf = (icon, name) => ICONS[icon] || (name || '?')[0]
 const todayLocal = () => {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -152,7 +154,7 @@ function Dashboard({ user, logout }) {
           </div>
           <form className="card form-row" onSubmit={addExpense}>
             <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+              {categories.map((c) => <option key={c.id} value={c.id}>{iconOf(c.icon, c.name)} {c.name}</option>)}
             </select>
             <input required type="number" min="0.01" step="0.01" placeholder="Amount" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
             <input required type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
@@ -169,7 +171,7 @@ function Dashboard({ user, logout }) {
             {(expenses || []).map((x) => (
               <div key={x.id} className="card row">
                 <div className="row-main-flex">
-                  <span className="cat-icon" style={{ background: x.categoryColor }}>{(x.categoryIcon || x.categoryName[0]).slice(0, 2)}</span>
+                  <span className="cat-icon" style={{ background: x.categoryColor }}>{iconOf(x.categoryIcon, x.categoryName)}</span>
                   <div className="row-main"><strong>{x.categoryName}</strong><span className="muted">{x.date}{x.note ? ` - ${x.note}` : ''}</span></div>
                 </div>
                 <div className="row-side"><strong>{money(x.amount)}</strong>
@@ -207,7 +209,7 @@ function Dashboard({ user, logout }) {
                 {week.byCategory.length === 0 && <p className="muted">Nothing spent this week.</p>}
                 {week.byCategory.map((c) => (
                   <div key={c.categoryId} className="cat-row">
-                    <span className="cat-icon" style={{ background: c.color }}>{(c.icon || c.name[0]).slice(0, 2)}</span>
+                    <span className="cat-icon" style={{ background: c.color }}>{iconOf(c.icon, c.name)}</span>
                     <div className="cat-main">
                       <div className="cat-head"><strong>{c.name}</strong><span>{money(c.total)} ({c.percent}%)</span></div>
                       <div className="track"><div className="fill" style={{ width: `${c.percent}%`, background: c.color }} /></div>
@@ -247,7 +249,7 @@ function Dashboard({ user, logout }) {
                 {report.byCategory.length === 0 && <p className="muted">Nothing spent yet this month.</p>}
                 {report.byCategory.map((c) => (
                   <div key={c.categoryId} className="cat-row">
-                    <span className="cat-icon" style={{ background: c.color }}>{(c.icon || c.name[0]).slice(0, 2)}</span>
+                    <span className="cat-icon" style={{ background: c.color }}>{iconOf(c.icon, c.name)}</span>
                     <div className="cat-main">
                       <div className="cat-head"><strong>{c.name}</strong><span>{money(c.total)} ({c.percent}%)</span></div>
                       <div className="track"><div className="fill" style={{ width: `${c.percent}%`, background: c.color }} /></div>
@@ -265,7 +267,7 @@ function Dashboard({ user, logout }) {
             <form className="form-row form-items" onSubmit={addItem}>
               <input required placeholder="Item name (e.g. Morning coffee)" value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} />
               <select value={itemForm.categoryId} onChange={(e) => setItemForm({ ...itemForm, categoryId: e.target.value })}>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                {categories.map((c) => <option key={c.id} value={c.id}>{iconOf(c.icon, c.name)} {c.name}</option>)}
               </select>
               <input required type="number" min="0.01" step="0.01" placeholder="Usual amount" value={itemForm.amount} onChange={(e) => setItemForm({ ...itemForm, amount: e.target.value })} />
               <button className="btn btn-primary">Add item</button>
@@ -273,7 +275,7 @@ function Dashboard({ user, logout }) {
             <div className="list">{quickItems.map((q) => (
               <div key={q.id} className="card row">
                 <div className="row-main-flex">
-                  <span className="cat-icon" style={{ background: q.categoryColor }}>{(q.categoryIcon || q.categoryName[0]).slice(0, 2)}</span>
+                  <span className="cat-icon" style={{ background: q.categoryColor }}>{iconOf(q.categoryIcon, q.categoryName)}</span>
                   <div className="row-main"><strong>{q.name}</strong><span className="muted">{q.categoryName} - {money(q.amount)}</span></div>
                 </div>
                 <div className="row-side">
@@ -292,7 +294,7 @@ function Dashboard({ user, logout }) {
           <div className="list">{categories.map((c) => (
             <div key={c.id} className="card row">
               <div className="row-main-flex">
-                <span className="cat-icon" style={{ background: c.color }}>{(c.icon || c.name[0]).slice(0, 2)}</span>
+                <span className="cat-icon" style={{ background: c.color }}>{iconOf(c.icon, c.name)}</span>
                 <strong>{c.name}</strong>{c.isDefault && <span className="badge badge-blue">default</span>}
               </div>
               {!c.isDefault && <button className="btn btn-ghost btn-sm" onClick={() => delCategory(c.id)}>Delete</button>}
