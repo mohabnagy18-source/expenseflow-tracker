@@ -9,6 +9,7 @@ public static class DbSeeder
     public static async Task SeedAsync(ApplicationDbContext db, IPasswordHasher hasher)
     {
         await db.Database.MigrateAsync();
+        await EnsureQuickItemsTableAsync(db);
 
         var demo = await db.Users.FirstOrDefaultAsync(u => u.Email == "demo@expenseflow.com");
         if (demo is null)
@@ -72,5 +73,38 @@ public static class DbSeeder
             }
             await db.SaveChangesAsync();
         }
+
+        if (!await db.QuickItems.AnyAsync(q => q.UserId == demo.Id))
+        {
+            var demoCats = await db.Categories.Where(c => c.UserId == demo.Id).ToListAsync();
+            Guid QCat(string name) => demoCats.First(c => c.Name == name).Id;
+            db.QuickItems.AddRange(
+                new QuickItem { UserId = demo.Id, CategoryId = QCat("Dining Out"), Name = "Morning coffee", Amount = 60m, SortOrder = 1 },
+                new QuickItem { UserId = demo.Id, CategoryId = QCat("Dining Out"), Name = "Lunch", Amount = 150m, SortOrder = 2 },
+                new QuickItem { UserId = demo.Id, CategoryId = QCat("Transport"), Name = "Uber ride", Amount = 120m, SortOrder = 3 },
+                new QuickItem { UserId = demo.Id, CategoryId = QCat("Groceries"), Name = "Supermarket run", Amount = 400m, SortOrder = 4 });
+            await db.SaveChangesAsync();
+        }
+    }
+
+    private static async Task EnsureQuickItemsTableAsync(ApplicationDbContext db)
+    {
+        const string sql = """
+            IF NOT EXISTS (SELECT 1 FROM sys.tables t JOIN sys.schemas s ON s.schema_id = t.schema_id
+                           WHERE t.name = 'QuickItems' AND s.name = 'expenseflow')
+            CREATE TABLE [expenseflow].[QuickItems] (
+                [Id] uniqueidentifier NOT NULL PRIMARY KEY,
+                [UserId] uniqueidentifier NOT NULL,
+                [CategoryId] uniqueidentifier NOT NULL,
+                [Name] nvarchar(80) NOT NULL,
+                [Amount] decimal(12,2) NOT NULL,
+                [Note] nvarchar(300) NULL,
+                [SortOrder] int NOT NULL,
+                [CreatedAtUtc] datetime2 NOT NULL,
+                CONSTRAINT [FK_QuickItems_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [expenseflow].[Users] ([Id]) ON DELETE CASCADE,
+                CONSTRAINT [FK_QuickItems_Categories_CategoryId] FOREIGN KEY ([CategoryId]) REFERENCES [expenseflow].[Categories] ([Id])
+            );
+            """;
+        await db.Database.ExecuteSqlRawAsync(sql);
     }
 }

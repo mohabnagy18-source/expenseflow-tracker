@@ -8,11 +8,12 @@ Track spending, organize it with your own categories, and get a clear monthly re
 Demo account: `demo@expenseflow.com` / `Demo123!` (comes with seeded expenses)
 
 ## Features
-- Email + password accounts with JWT auth, per-user currency
-- Expenses CRUD with category, date and notes
-- Custom categories with icon and color (default set seeded on sign-up)
+- Quick items: define your usual expenses (name, category, usual amount) once, then log them for today with one tap
+- Daily logging form with category, date and notes (defaults to today)
+- Weekly summary: week total with percent change vs previous week, today vs yesterday comparison ("more frugal" indicator), weekday bar chart, category breakdown
 - Monthly report: total, expense count, daily average, percent change vs previous month, daily bar chart, category share bars
-- Month navigation and filters
+- Email + password accounts with JWT auth, per-user currency
+- Custom categories with icon and color (default set seeded on sign-up)
 - Responsive UI for mobile and desktop
 
 ## Tech stack

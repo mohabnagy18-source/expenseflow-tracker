@@ -87,6 +87,44 @@ public class ExpenseService(IApplicationDbContext db)
             Math.Round(total / daysInMonth, 2), byCategory, byDay, prevTotal, change);
     }
 
+    public async Task<WeeklyReportDto> WeeklyReportAsync(Guid userId, DateOnly? anchor, CancellationToken ct = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var day = anchor ?? today;
+        var start = day.AddDays(-(((int)day.DayOfWeek + 6) % 7)); // Monday
+        var end = start.AddDays(6);
+
+        var expenses = await db.Expenses.Include(e => e.Category)
+            .Where(e => e.UserId == userId && e.Date >= start && e.Date <= end)
+            .ToListAsync(ct);
+        var prevTotal = await db.Expenses
+            .Where(e => e.UserId == userId && e.Date >= start.AddDays(-7) && e.Date < start)
+            .SumAsync(e => (decimal?)e.Amount, ct) ?? 0m;
+        var yesterdayTotal = await db.Expenses
+            .Where(e => e.UserId == userId && e.Date == today.AddDays(-1))
+            .SumAsync(e => (decimal?)e.Amount, ct) ?? 0m;
+        var todayTotal = await db.Expenses
+            .Where(e => e.UserId == userId && e.Date == today)
+            .SumAsync(e => (decimal?)e.Amount, ct) ?? 0m;
+
+        var total = expenses.Sum(e => e.Amount);
+        var byCategory = expenses
+            .GroupBy(e => new { e.CategoryId, e.Category.Name, e.Category.Icon, e.Category.Color })
+            .Select(g => new CategoryTotalDto(g.Key.CategoryId, g.Key.Name, g.Key.Icon, g.Key.Color,
+                g.Sum(e => e.Amount), total == 0 ? 0 : Math.Round(g.Sum(e => e.Amount) / total * 100, 1)))
+            .OrderByDescending(c => c.Total).ToList();
+        var byDay = Enumerable.Range(0, 7)
+            .Select(i => new DailyTotalDto(start.AddDays(i),
+                expenses.Where(e => e.Date == start.AddDays(i)).Sum(e => e.Amount)))
+            .ToList();
+        var change = prevTotal == 0 ? 0 : Math.Round((total - prevTotal) / prevTotal * 100, 1);
+        var dayChange = yesterdayTotal == 0 ? 0 : Math.Round((todayTotal - yesterdayTotal) / yesterdayTotal * 100, 1);
+
+        return new WeeklyReportDto(start, end, total, expenses.Count,
+            Math.Round(total / 7, 2), byCategory, byDay, prevTotal, change,
+            todayTotal, yesterdayTotal, dayChange);
+    }
+
     private static ExpenseDto ToDto(Expense e) =>
         new ExpenseDto(e.Id, e.CategoryId, e.Category.Name, e.Category.Icon, e.Category.Color,
             e.Amount, e.Date, e.Note);

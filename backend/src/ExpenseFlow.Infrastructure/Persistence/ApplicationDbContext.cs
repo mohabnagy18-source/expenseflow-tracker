@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<User> Users => Set<User>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<QuickItem> QuickItems => Set<QuickItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +35,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             e.Property(x => x.Note).HasMaxLength(300);
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Category).WithMany(c => c.Expenses).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<QuickItem>(e =>
+        {
+            e.Property(q => q.Name).HasMaxLength(80);
+            e.Property(q => q.Note).HasMaxLength(300);
+            e.Property(q => q.Amount).HasPrecision(12, 2);
+            e.HasOne(q => q.User).WithMany().HasForeignKey(q => q.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(q => q.Category).WithMany().HasForeignKey(q => q.CategoryId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
